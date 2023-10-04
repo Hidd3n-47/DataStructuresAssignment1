@@ -1,15 +1,14 @@
 #pragma once
-#include <list>
-
-// TODO (Christian): Need to fix the list.end() to be the node past the last node so that the iterators work correctly.
 
 template<typename T>
 struct _List_Node
 {
+	_List_Node() = default;
 	_List_Node(T value) : _Value(value) { /* Empty. */ }
 
-	T _Value = nullptr;
+	T _Value = NULL;
 	_List_Node<T>* _pNext = nullptr;
+	_List_Node<T>* _pPrev = nullptr;
 };
 
 template<typename T>
@@ -21,8 +20,6 @@ public:
 	inline _iterator<T>& operator++(int)
 	{
 		// TODO (Christian): Add assert here if there is no next value.
-
-		this->_index++;
 		this->_pNode = _pNode->_pNext;
 
 		return *this;
@@ -32,7 +29,6 @@ public:
 	{
 		// TODO (Christian): Add assert here if there is no next value.
 
-		this->_index++;
 		this->_pNode = _pNode->_pNext;
 
 		return *this;
@@ -48,21 +44,17 @@ public:
 		return this->_pNode != _rhs._pNode;
 	}
 
-	_iterator(_List_Node<T>* _node, uint64_t _index) : _pNode(_node), _index(_index) { /* Empty. */ /*_pNode = _node; this->_index = _index - 1;*/ }
+	_iterator(_List_Node<T>* _node) : _pNode(_node) { /* Empty. */ }
 private:
 	_List_Node<T>* _pNode;
-	uint64_t _index;
 };
 
 template<typename T>
 class List
 {
 public:
-	List<T>() { /* Empty. */ }
-	~List<T>() { /* TODO (Christian): Clear memory here! */ }
-
-	// Iterator first.
-	// Iterator end.
+	inline List<T>() { _pEnd = new _List_Node<T>(); }
+	inline ~List<T>() { clear(); }
 
 	/// <<< ----- Inserting into the List.
 	// TODO (Christian): Look at adding a list/array at once, eg. push_back({ 1, 2});
@@ -73,15 +65,18 @@ public:
 		_List_Node<T>* node = _pFirst;
 		_List_Node<T>* _new = new _List_Node<T>(_Value);
 
-		if (!_pFirst) { _pLast = _pFirst = _new; return; }
+		if (!_pFirst) { _pLast = _pFirst = _new; SetEndAndLast();  return; }
 
-		while (node->_pNext)
+		while (node->_pNext != _pEnd)
 		{
 			node = node->_pNext;
 		}
 
 		node->_pNext = _new;
+		_new->_pPrev = node;
 		_pLast = _new;
+
+		SetEndAndLast();
 	}
 
 	inline void push_front(T _Value)
@@ -89,10 +84,18 @@ public:
 		++_MySize;
 
 		_List_Node<T>* _new = new _List_Node<T>(_Value);
+
+		if (!_pFirst) { _pLast = _pFirst = _new; SetEndAndLast();  return; }
+
 		_new->_pNext = _pFirst;
+		_pFirst->_pPrev = _new;
 		_pFirst = _new;
 
-		if (_MySize == 1) { _pLast = _new; }
+		if (_MySize == 1) 
+		{ 
+			_pLast = _new; 
+			SetEndAndLast();
+		}
 	}
 
 	//void insert(_iterator _Where, T* _Value); // TODO (Christian): Implement iterator.
@@ -116,18 +119,21 @@ public:
 		{
 			delete _pFirst->_pNext;
 			_pLast = _pFirst;
+			SetEndAndLast();
 			return;
 		}
 
 		_pLast = _pFirst;
 
-		while (_pLast->_pNext->_pNext)
+		while (_pLast->_pNext->_pNext != _pEnd)
 		{
 			_pLast = _pLast->_pNext;
 		}
 
 		delete _pLast->_pNext;
 		_pLast->_pNext = nullptr;
+
+		SetEndAndLast();
 	}
 
 	inline void pop_front()
@@ -139,29 +145,50 @@ public:
 		_List_Node<T> _tmp = _pFirst->_pNext;
 		delete _pFirst;
 		_pFirst = _tmp;
+		_pFirst->_pPrev = nullptr;
 	}
 
 	inline void clear()
 	{
-		// TODO (Christian): implement the clear method.
+		if (_MySize == 0) { return; } // TODO (Christian): Assert here due to the list being already empty.
+
+		_List_Node<T>* node = _pFirst;
+
+		while (_pFirst->_pNext != _pEnd)
+		{
+			node = _pFirst;
+			_pFirst = _pFirst->_pNext;
+			delete node;
+		}
+
+		delete _pFirst;
+		delete _pEnd;
+
+		_pFirst = _pLast = _pEnd = nullptr;
+		_MySize = 0;
 	}
 	/// ================================
 
 	///<<< ----- Iterators.
-	inline _iterator<T> begin() { /*return _pFirst;*/ return _iterator<T>(_pFirst, 0); }
-
-	inline _iterator<T> end() { /*return _pLast;*/ return _iterator<T>(_pLast, _MySize - 1); }
+	inline _iterator<T> begin()		{  return _iterator<T>(_pFirst); }
+	inline _iterator<T> end()		{  return _iterator<T>(_pEnd); }
 	/// ================================
 
 
 	///<<< ----- Accessors.
 	inline T front() const { return _pFirst->_Value; }
-
 	inline T back() const { return _pLast->_Value; }
 	/// ================================
 private:
 	_List_Node<T>* _pFirst = nullptr;
 	_List_Node<T>* _pLast = nullptr;
+	_List_Node<T>* _pEnd = nullptr;
 	uint64_t _MySize = 0;
+
+	inline void SetEndAndLast()
+	{
+		_pLast->_pNext = _pEnd;
+		_pEnd->_pNext = _pLast;
+	}
 };
 

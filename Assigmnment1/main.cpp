@@ -21,9 +21,6 @@ void TestOne()
 		std::cout << it.value() << std::endl;
 	}
 
-	sum += list.end().value();
-	std::cout << list.back() << std::endl;
-
 	std::cout << "----------" << std::endl;
 	std::cout << "Sum: " << sum << std::endl;
 }
@@ -50,21 +47,17 @@ void TestTwo()
 		reverse.push_front(it.value());
 	}
 
-	reverse.push_front(list.back());
-
 	std::cout << "\n\nFirst List:\n";
 	for (auto it = list.begin(); it != list.end(); it++)
 	{
 		std::cout << it.value() << "_";
 	}
-	std::cout << list.back();
 
 	std::cout << "\n\nSecond List:\n";
 	for (auto it = reverse.begin(); it != reverse.end(); it++)
 	{
 		std::cout << it.value() << "_";
 	}
-	std::cout << reverse.back();
 }
 
 void TestThree()
@@ -106,40 +99,23 @@ void TestThree()
 		}
 	}
 
-	int tmp = list.back();
-	if (tmp < 0)
-	{
-		negatives.push_back(tmp);
-	}
-	else if (tmp == 0)
-	{
-		zeros.push_back(tmp);
-	}
-	else
-	{
-		positives.push_back(tmp);
-	}
-
 	std::cout << "\n\nNegative List:\n_____________\n";
 	for (auto it = negatives.begin(); it != negatives.end(); it++)
 	{
 		std::cout << it.value() << "_";
 	}
-	std::cout << negatives.back();
 
 	std::cout << "\n\nZero List:\n_____________\n";
 	for (auto it = zeros.begin(); it != zeros.end(); it++)
 	{
 		std::cout << it.value() << "_";
 	}
-	std::cout << zeros.back();
 
 	std::cout << "\n\nPositive List:\n_____________\n";
 	for (auto it = positives.begin(); it != positives.end(); it++)
 	{
 		std::cout << it.value() << "_";
 	}
-	std::cout << positives.back();
 }
 
 
@@ -171,29 +147,17 @@ void TestFour()
 		}
 	}
 
-	int tmp = list.back();
-	if (tmp % 2 == 0)
-	{
-		evens.push_back(tmp);
-	}
-	else
-	{
-		odds.push_back(tmp);
-	}
-
 	std::cout << "\n\nOdds List:\n_____________\n";
 	for (auto it = odds.begin(); it != odds.end(); it++)
 	{
 		std::cout << it.value() << "_";
 	}
-	std::cout << odds.back();
 
 	std::cout << "\n\nEvens List:\n_____________\n";
 	for (auto it = evens.begin(); it != evens.end(); it++)
 	{
 		std::cout << it.value() << "_";
 	}
-	std::cout << evens.back();
 }
 
 void TestFive()
