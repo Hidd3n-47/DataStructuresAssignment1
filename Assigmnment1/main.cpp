@@ -28,17 +28,7 @@ void TestOne()
 void TestTwo()
 {
 	List<char> list;
-	list.push_back('d');
-	list.push_back('l');
-	list.push_back('r');
-	list.push_back('o');
-	list.push_back('w');
-	list.push_back(' ');
-	list.push_back('o');
-	list.push_back('l');
-	list.push_back('l');
-	list.push_back('e');
-	list.push_back('h');
+	list.push_back('d', 'l', 'r', 'o', 'w', ' ', 'o', 'l', 'l', 'e', 'h');
 
 	List<char> reverse;
 
@@ -50,33 +40,20 @@ void TestTwo()
 	std::cout << "\n\nFirst List:\n";
 	for (auto it = list.begin(); it != list.end(); it++)
 	{
-		std::cout << it.value() << "_";
+		std::cout << it.value() << " ";
 	}
 
 	std::cout << "\n\nSecond List:\n";
 	for (auto it = reverse.begin(); it != reverse.end(); it++)
 	{
-		std::cout << it.value() << "_";
+		std::cout << it.value() << " ";
 	}
 }
 
 void TestThree()
 {
 	List<int> list;
-	list.push_back(-10);
-	list.push_back(0);
-	list.push_back(2);
-	list.push_back(9);
-	list.push_back(0);
-	list.push_back(-15);
-	list.push_back(-6);
-	list.push_back(-7);
-	list.push_back(0);
-	list.push_back(13);
-	list.push_back(8);
-	list.push_back(4);
-	list.push_back(0);
-	list.push_back(6);
+	list.push_back(-10, 0, 2, 9, 0, -15, -6, -7, 0, 13, 8, 4, 0, 6);
 
 	List<int> negatives;
 	List<int> zeros;
@@ -102,13 +79,13 @@ void TestThree()
 	std::cout << "\n\nNegative List:\n_____________\n";
 	for (auto it = negatives.begin(); it != negatives.end(); it++)
 	{
-		std::cout << it.value() << "_";
+		std::cout << it.value() << " ";
 	}
 
 	std::cout << "\n\nZero List:\n_____________\n";
 	for (auto it = zeros.begin(); it != zeros.end(); it++)
 	{
-		std::cout << it.value() << "_";
+		std::cout << it.value() << " ";
 	}
 
 	std::cout << "\n\nPositive List:\n_____________\n";
@@ -122,14 +99,7 @@ void TestThree()
 void TestFour()
 {
 	List<int> list;
-	list.push_back(10);
-	list.push_back(2);
-	list.push_back(9);
-	list.push_back(15);
-	list.push_back(6);
-	list.push_back(7);
-	list.push_back(13);
-	list.push_back(8);
+	list.push_back(10, 2, 9, 15, 6, 7, 13, 8);
 
 	List<int> odds;
 	List<int> evens;
@@ -162,19 +132,30 @@ void TestFour()
 
 void TestFive()
 {
+	std::cout << std::endl << std::endl << std::endl;
 	List<int> list;
-	list.push_back(-1);
-	list.push_back(5);
-	list.push_back(17);
-	list.push_back(4);
-	list.push_back(9);
-	list.push_back(20);
-	list.push_back(-7);
-	list.push_back(8);
-	list.push_back(11);
-	list.push_back(0);
-	list.push_back(53);
-	list.push_back(14);
+	list.push_back(-1, 5, 17, 4, 9, 20, -7, 8, 11, 0, 53, 14);
+
+	for (int i = list.size(); i > 0; i--)
+	{
+		int counter = 0;
+		auto previous = list.begin();
+
+		for (auto it = list.begin(); counter++ < i; it++)
+		{
+			if (it == list.begin()) { continue; }
+
+			if (previous.value() > it.value())
+			{
+				list.swap(previous, it);
+			}
+			previous = it;
+		}
+	}
+
+	for (auto it = list.begin(); it != list.end(); it++)
+		std::cout << it.value() << std::endl;
+
 
 	// TODO: sort.
 }
