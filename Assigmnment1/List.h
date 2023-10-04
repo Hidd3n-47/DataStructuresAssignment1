@@ -1,6 +1,7 @@
 #pragma once
 #include <list>
 
+// TODO (Christian): Need to fix the list.end() to be the node past the last node so that the iterators work correctly.
 
 template<typename T>
 struct _List_Node
@@ -19,7 +20,7 @@ public:
 
 	inline _iterator<T>& operator++(int)
 	{
-		// TODO: Add assert here if there is no next value.
+		// TODO (Christian): Add assert here if there is no next value.
 
 		this->_index++;
 		this->_pNode = _pNode->_pNext;
@@ -29,7 +30,7 @@ public:
 
 	inline _iterator<T>& operator++()
 	{
-		// TODO: Add assert here if there is no next value.
+		// TODO (Christian): Add assert here if there is no next value.
 
 		this->_index++;
 		this->_pNode = _pNode->_pNext;
@@ -58,13 +59,13 @@ class List
 {
 public:
 	List<T>() { /* Empty. */ }
-	~List<T>() { /* TODO: Clear memory here! */ }
+	~List<T>() { /* TODO (Christian): Clear memory here! */ }
 
 	// Iterator first.
 	// Iterator end.
 
 	/// <<< ----- Inserting into the List.
-	// TODO: Look at adding a list/array at once, eg. push_back({ 1, 2});
+	// TODO (Christian): Look at adding a list/array at once, eg. push_back({ 1, 2});
 	inline void push_back(T _Value)
 	{
 		++_MySize;
@@ -94,13 +95,13 @@ public:
 		if (_MySize == 1) { _pLast = _new; }
 	}
 
-	//void insert(_iterator _Where, T* _Value); // TODO: Implement iterator.
+	//void insert(_iterator _Where, T* _Value); // TODO (Christian): Implement iterator.
 	/// ================================
 
 	/// <<< ----- Removing from the List.
 	inline void pop_back()
 	{
-		if (_MySize == 0) { return; } // TODO: Assert here due to the list being already empty.
+		if (_MySize == 0) { return; } // TODO (Christian): Assert here due to the list being already empty.
 
 		--_MySize;
 
@@ -131,7 +132,7 @@ public:
 
 	inline void pop_front()
 	{
-		if (_MySize == 0) { return; } // TODO: Assert here due to the list being already empty.
+		if (_MySize == 0) { return; } // TODO (Christian): Assert here due to the list being already empty.
 
 		--_MySize;
 
@@ -142,7 +143,7 @@ public:
 
 	inline void clear()
 	{
-		// TODO: implement the clear method.
+		// TODO (Christian): implement the clear method.
 	}
 	/// ================================
 
