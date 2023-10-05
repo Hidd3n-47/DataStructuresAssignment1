@@ -1,6 +1,24 @@
 #pragma once
 
-#include <vector>
+struct _MemAllocation
+{
+	uint32_t _allocated		= 0; 
+	uint32_t _freed			= 0;
+};
+
+static _MemAllocation MEM_ALLOCATION;
+
+void* operator new(size_t size)
+{
+	MEM_ALLOCATION._allocated += size;
+	return malloc(size);
+}
+
+void operator delete(void* memory, size_t size)
+{
+	MEM_ALLOCATION._freed += size;
+	free(memory);
+}
 
 template<typename T>
 struct _List_Node
@@ -8,9 +26,9 @@ struct _List_Node
 	_List_Node() = default;
 	_List_Node(T value) : _Value(value) { /* Empty. */ }
 
-	T _Value = NULL;
-	_List_Node<T>* _pNext = nullptr;
-	_List_Node<T>* _pPrev = nullptr;
+	T				_Value	= NULL;
+	_List_Node<T>*	_Next	= nullptr;
+	_List_Node<T>*	_Prev	= nullptr;
 };
 
 template<typename T>
@@ -19,13 +37,12 @@ class _iterator
 	template<typename T>
 	friend class List;
 public:
-	T value() const { return _pNode->_Value; }
+	T value() const { return _Node->_Value; }
 
 	inline _iterator<T>& operator++(int)
 	{
 		// TODO (Christian): Add assert here if there is no next value.
-		++_index;
-		this->_pNode = _pNode->_pNext;
+		this->_Node = _Node->_Next;
 
 		return *this;
 	}
@@ -33,68 +50,66 @@ public:
 	inline _iterator<T>& operator++()
 	{
 		// TODO (Christian): Add assert here if there is no next value.
-		++_index;
-		this->_pNode = _pNode->_pNext;
+		this->_Node = _Node->_Next;
 
 		return *this;
 	}
 
-	inline bool operator== (const _iterator<T>& _rhs) const 
+	inline bool operator== (const _iterator<T>& _rhs) const
 	{
-		return this->_pNode == _rhs._pNode;
+		return (this->_Node == _rhs._Node);
 	}
 
-	inline bool operator!= (const _iterator<T>& _rhs) const 
+	inline bool operator!= (const _iterator<T>& _rhs) const
 	{
-		return this->_pNode != _rhs._pNode;
+		return (this->_Node != _rhs._Node);
 	}
 
 private:
-	_iterator(_List_Node<T>* _node, uint64_t _index) : _pNode(_node), _index(_index) { /* Empty. */ }
-	_List_Node<T>* _pNode;
-	uint64_t _index = 0;
+	_iterator(_List_Node<T>* _node) : _Node(_node) { /* Empty. */ }
+	_List_Node<T>* _Node;
 };
 
 template<typename T>
 class List
 {
 public:
-	inline List<T>() { _pEnd = new _List_Node<T>(); }
-	inline ~List<T>() { clear(); }
-	
+	inline List<T>()	{ _End = new _List_Node<T>(); }
+	inline ~List<T>()	{ clear(); delete _End; }
+
 	/// <<< ----- Inserting into the List.
 	template<typename ...Args>
-	inline void push_back(Args&&... args)
+	inline void push_back(Args&&... _args)
 	{
-		([&] { push_back(args); } (), ...);
+		([&] { push_back(_args); } (), ...);
 	}
 
 	inline void push_back(T _Value) // Refactored.
 	{
 		++_MySize;
 
+		if (!_First) { _InsertOnEmpty(_Value); return; }
+
 		_List_Node<T>* _new = new _List_Node<T>(_Value);
 
-		if (!_pFirst) { _InsertOnEmpty(_Value); return; }
-
-		_new->_pNext = _pEnd;
-		_pEnd->_pPrev = _new;
-		_new->_pPrev = _pLast;
-		_pLast->_pNext = _new;
-		_pLast = _new;
+		_new->_Next = _End;
+		_End->_Prev = _new;
+		_new->_Prev = _Last;
+		_Last->_Next = _new;
+		_Last = _new;
 	}
 
 	inline void push_front(T _Value) // Refactored.
 	{
 		++_MySize;
 
+		if (!_First) { _InsertOnEmpty(_Value); return; }
+
 		_List_Node<T>* _new = new _List_Node<T>(_Value);
 
-		if (!_pFirst) { _InsertOnEmpty(_Value); return; }
-
-		_new->_pNext = _pFirst;
-		_pFirst->_pPrev = _new;
-		_pFirst = _new;
+		_new->_Next = _First;
+		_First->_Prev = _new;
+		_First = _new;
 	}
 
 	// TODO (Christian): Implement insert method: void insert(_iterator _Where, T* _Value);
@@ -107,32 +122,17 @@ public:
 
 		--_MySize;
 
-		if (!_pFirst->_pNext)
-		{
-			delete _pFirst;
-			_pLast = _pFirst = nullptr;
-			return;
+		if (_MySize == 0) 
+		{ 
+			delete _First; 
+			_First = _Last = _End = nullptr; 
+			return; 
 		}
 
-		if (!_pFirst->_pNext->_pNext)
-		{
-			delete _pFirst->_pNext;
-			_pLast = _pFirst;
-			//SetEndAndLast();
-			return;
-		}
-
-		_pLast = _pFirst;
-
-		while (_pLast->_pNext->_pNext != _pEnd)
-		{
-			_pLast = _pLast->_pNext;
-		}
-
-		delete _pLast->_pNext;
-		_pLast->_pNext = nullptr;
-
-		//SetEndAndLast();
+		_End->_Prev = _Last->_Prev;
+		delete _Last;
+		_Last = _End->_Prev;
+		_Last->_Next = _End;
 	}
 
 	inline void pop_front()
@@ -141,95 +141,75 @@ public:
 
 		--_MySize;
 
-		_List_Node<T> _tmp = _pFirst->_pNext;
-		delete _pFirst;
-		_pFirst = _tmp;
-		_pFirst->_pPrev = nullptr;
+		if (_MySize == 0) 
+		{ 
+			delete _First; 
+			_First = _Last = _End = nullptr; 
+			return; 
+		}
+
+		_First = _First->_Next;
+		delete _First->_Prev;
+		_First->_Prev = nullptr;
 	}
 
 	inline void clear()
 	{
 		if (_MySize == 0) { return; } // TODO (Christian): Assert here due to the list being already empty.
 
-		_List_Node<T>* node = _pFirst;
+		_List_Node<T>* node = _First;
 
-		while (_pFirst->_pNext != _pEnd)
+		while (_First->_Next != _End)
 		{
-			node = _pFirst;
-			_pFirst = _pFirst->_pNext;
+			node = _First;
+			_First = _First->_Next;
 			delete node;
 		}
 
-		delete _pFirst;
-		delete _pEnd;
+		delete _First;
 
-		_pFirst = _pLast = _pEnd = nullptr;
+		_First = _Last = nullptr;
 		_MySize = 0;
+
+		_End->_Prev = nullptr;
 	}
 
 	inline void swap(_iterator<T> _val1, _iterator<T> _val2)
 	{
 		// TODO (Christian): Assert if the iterators are the same.
 
-		/*if (_val1._index > _val2._index)
-		{
-			swap(_val2, _val1);
-			return;
-		}
-		_List_Node<T>* tmp = _val1._pNode;
-		uint64_t tmpIndex = _val1._index;
-		
-		_val1._pNode->_pNext = _val2._pNode->_pNext;
-		_val1._pNode->_pPrev = _val2._pNode->_pPrev;
-		_val1._index = _val2._index;
-		_val2._pNode->_pPrev->_pNext = _val1._pNode;
-
-		_val2._pNode->_pNext = tmp->_pNext;
-		_val2._pNode->_pPrev = tmp->_pPrev;
-		_val2._index = tmpIndex;
-		tmp->_pNext->_pPrev = _val2._pNode;
-
-		if (_val2._index == 0)
-		{
-			_pFirst = _val2._pNode;
-		}
-		if (_val1._index == _MySize)
-		{
-			_pLast = _val2._pNode;
-		}*/
-
-		// QUESTION (Christian): this does not change the memory locations, meaning there could be consequences with pointers?? Eg. should point to 3rd index, after swap(1,3), will point to 1st index. Issue?
-
 		T tmp = _val1.value();
-		_val1._pNode->_Value = _val2._pNode->_Value;
-		_val2._pNode->_Value = tmp;
+
+		_val1._Node->_Value = _val2._Node->_Value;
+		_val2._Node->_Value = tmp;
 	}
 	/// ================================
 
 	///<<< ----- Iterators.
-	inline _iterator<T> begin()		{  return _iterator<T>(_pFirst, 0); }
-	inline _iterator<T> end()		{  return _iterator<T>(_pEnd, _MySize); }
+	inline _iterator<T> begin()		{ return _iterator<T>(_First); }
+	inline _iterator<T> end()		{ return _iterator<T>(_End); }
 	/// ================================
 
 
 	///<<< ----- Accessors.
-	inline T front() const			{ return _pFirst->_Value; }
-	inline T back() const			{ return _pLast->_Value; }
-	inline uint64_t size() const	{ return _MySize; }
+	inline T front() const			{ return _First->_Value; }
+	inline T back() const			{ return _Last->_Value; }
+	inline uint64_t size()	const	{ return _MySize; }
 	/// ================================
 private:
-	_List_Node<T>* _pFirst = nullptr;
-	_List_Node<T>* _pLast = nullptr;
-	_List_Node<T>* _pEnd = nullptr;
-	uint64_t _MySize = 0;
+	_List_Node<T>* _First	= nullptr;
+	_List_Node<T>* _Last	= nullptr;
+	_List_Node<T>* _End		= nullptr;
+	uint64_t _MySize		= 0;
 
 	inline void _InsertOnEmpty(T _Value)
 	{
-		_List_Node<T>* _new = new _List_Node<T>(_Value);
-		_pLast = _pFirst = _new;
+		_List_Node<T>* _new	= new _List_Node<T>(_Value);
 
-		_pLast->_pNext = _pEnd;
-		_pEnd->_pPrev = _pLast;
+		_Last = _First	= _new;
+
+		_First->_Next	= _End;
+		_Last->_Next	= _End;
+		_End->_Prev		= _Last;
 	}
 };
-
