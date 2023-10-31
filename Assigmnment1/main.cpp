@@ -1,5 +1,4 @@
-#include <iostream>
-
+#include "Memory.h"
 #include "List.h"
 
 template<class T>
@@ -20,27 +19,6 @@ void ConsolePrintList(const List<T>& list)
 #define PRINT(x) \
 	std::cout << "| '" << #x << "' = "; \
 	ConsolePrintList(x)
-
-template<class T>
-void BubbleSortList(List<T>& list)
-{
-	for (int i = list.size(); i > 0; i--)
-	{
-		int counter = 0;
-		auto previous = list.begin();
-
-		for (auto it = list.begin(); counter++ < i; it++)
-		{
-			if (it == list.begin()) { continue; }
-
-			if (previous.value() > it.value())
-			{
-				list.swap(previous, it);
-			}
-			previous = it;
-		}
-	}
-}
 
 void TestOne()
 {
@@ -190,7 +168,7 @@ void TestFive()
 	std::cout << "| Original List:" << std::endl;
 	PRINT(list);
 
-	BubbleSortList(list);
+	list.sort();
 
 	std::cout << "| Sorted List:" << std::endl;
 	PRINT(list);
@@ -198,16 +176,7 @@ void TestFive()
 	std::cout << "|===================================================================|\n\n";
 }
 
-void PrintMemory()
-{
-	std::cout << "|===================================================================|\n";
-	std::cout << "|                          MEM_ALLOCATION                           |\n";
-	std::cout << "|-------------------------------------------------------------------|\n";
-	std::cout << "| Allocated: "	<< MEM_ALLOCATION._allocated	<< " bytes\n";
-	std::cout << "| Freed: "		<< MEM_ALLOCATION._freed		<< " bytes\n";
-	std::cout << "|===================================================================|\n";
-}
-
+// Class to test memory allocation.
 class foo
 {
 public:
